@@ -2,6 +2,9 @@
 Go Microservices Full Course: Build a Payments System From Scratch
 https://www.youtube.com/watch?v=AVy0hy4qSnQ
 
+github
+https://github.com/dev-marker/payments/blob/ep03/cmd/wallet/main.go
+
 STEP:Build production-grade
 >docker-compose up -d
 >docker compose ps --format "table {{.Service}} \t{{.State}}\t{{.Status}}"
@@ -94,6 +97,7 @@ WHERE account_id IN (:'bank',:'alice',:'bob')
 ORDER BY name;
 ```
 >docker compose exec -T postgres psql -U payments -d wallet -c 'SELECT direction,sum(amount) FROM entries GROUP BY 1 ORDER BY 1' 
+>docker compose exec -T postgres psql -U payments -d wallet -q < scratch.sql
 
 - Scenario 2 credit and debit not equal
 
@@ -168,7 +172,61 @@ DELETE FROM transactions WHERE id=:'tx';
 ```
 
 ### Git
-git status --short
-git diff -U2 docker-compose.yml
-git add .
-git commit -m "feat(wallet): double-entry ledger schema and migration" 
+>git status --short
+>git diff -U2 docker-compose.yml
+>git add .
+>git commit -m "feat(wallet): double-entry ledger schema and migration" 
+
+# EP03
+    Tell benefit for  sqlc and compare with another way
+    start to sqlc
+
+## install sqlc
+>go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+>which sqlc
+>sqlc --version
+
+### Create SQL queries
+- db/wallet/queries/accounts.sql
+- db/wallet/queries/ledger.sql
+
+### Generate Go code from SQL definitions
+>sqlc generate
+
+## install pgx driver
+>go get github.com/jackc/pgx/v5
+>go get github.com/google/uuid
+
+>go build ./...
+
+## Create connection pool
+Wallet/internal/platform/postgres/postgres.go
+>go mod tidy
+
+create files
+> Wallet/internal/wallet/store.go
+> Wallet/internal/wallet/ledger.go
+
+To check the error in your code.
+>go vet ./...
+
+Start service 
+>go run ./cmd/wallet
+
+curl -s localhost:8081/healthz
+curl -i localhost:8081/readyz
+
+Test db down
+>docker stop payment-postgres
+>docker compose up -d --wait postgres
+>curl -i localhost:8081/readyz
+
+## Go test files
+create store_test.go
+
+>go test ./...
+
+## Make test
+make test TESTFLAG='-v run Unbalanced'
+
+>git status --short
