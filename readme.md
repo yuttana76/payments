@@ -5,6 +5,23 @@ https://www.youtube.com/watch?v=AVy0hy4qSnQ
 github
 https://github.com/dev-marker/payments/blob/ep03/cmd/wallet/main.go
 
+Run on production env.
+>APP_ENV=production make run-wallet
+
+curl command 
+>curl -i localhost:8081/healthz
+>curl -s -H 'X-Request-ID: checkout-42' localhost:8081/wallets/123
+
+** Before git **
+>make test
+>go vet ./...
+>git status --short
+>git diff -U2 cmd/wallet/main.go
+>git add .
+>git commit -m "feat(wallet): "
+
+***************************
+
 STEP:Build production-grade
 >docker-compose up -d
 >docker compose ps --format "table {{.Service}} \t{{.State}}\t{{.Status}}"
@@ -29,7 +46,6 @@ Build static binary
 >docker compose down -v
 >docker compose up -d --wait
 >docker compose exec -T postgres psql -U payments -c "SELECT datname FROM pg_database WHERE NOT datistemplate "
-
 >docker compose exec -T postgres psql -U payments -d wallet -c '\dt'
 
 
@@ -47,7 +63,7 @@ Install migrate for postgres
 
 Check tables in wallet db
 >docker compose exec -T postgres psql -U payments -d wallet -c '\dt'
-
+>docker compose exec -T postgres psql -U payments -d wallet -c 'SELECT name,balance FROM account_balances ORDER BY name' 
 
 #### For test query
 Create file scratch.sql
@@ -230,3 +246,24 @@ create store_test.go
 make test TESTFLAG='-v run Unbalanced'
 
 >git status --short
+>git diff -U2 cmd/wallet/main.go
+>git add .
+>git commit -m "feat(wallet): add DB store with SQLC-generated code" 
+
+# EP04
+
+## A middleware chain
+>go test ./internal/platform/config
+
+>go test ./internal/platform/...
+>go test -v -run 'TestError$' ./internal/platform/httpx
+
+>go vet ./...
+
+### Run with env
+>APP_ENV=prod LOG_LEVEL=loud WALLET_DB_MAM=ten  go run ./cmd/wallet
+
+make run-wallet
+
+!WATCH NEXT 45 mins.
+In youtube is 2:50:41
